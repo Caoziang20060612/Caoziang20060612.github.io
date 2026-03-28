@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Moving Car Animation</title>
+    <style>
+        /* 页面基础样式：蓝天背景 */
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background: linear-gradient(to bottom, #87ceeb 0%, #e0f6ff 100%);
+            display: flex;
+            align-items: flex-end;
+            overflow: hidden; /* 隐藏滚动条，让动画更流畅 */
+        }
+
+        /* 马路容器 */
+        .road {
+            width: 100%;
+            height: 180px;
+            background: #333;
+            position: relative;
+        }
+
+        /* 马路虚线标线 */
+        .road-line {
+            position: absolute;
+            top: 50%;
+            width: 100%;
+            height: 8px;
+            background: repeating-linear-gradient(
+                to right,
+                #fff 0px,
+                #fff 80px,
+                transparent 80px,
+                transparent 160px
+            );
+            transform: translateY(-50%);
+        }
+
+        /* 小汽车整体容器 */
+        .car {
+            position: absolute;
+            bottom: 80px;
+            left: 0;
+            /* 核心动画：小汽车从左到右无限循环运动 */
+            animation: carDrive 8s linear infinite;
+        }
+
+        /* 车身主体 */
+        .car-body {
+            width: 300px;
+            height: 100px;
+            background: linear-gradient(135deg, #ff0000 0%, #cc0000 100%);
+            border-radius: 20px 50px 10px 10px;
+            position: relative;
+        }
+
+        /* 车顶 */
+        .car-roof {
+            position: absolute;
+            top: -60px;
+            left: 60px;
+            width: 160px;
+            height: 60px;
+            background: linear-gradient(135deg, #dd0000 0%, #aa0000 100%);
+            border-radius: 40px 40px 0 0;
+        }
+
+        /* 车窗通用样式 */
+        .car-window {
+            position: absolute;
+            top: 10px;
+            height: 40px;
+            background: #a8d8ff;
+            border: 3px solid #222;
+        }
+        .window-front {
+            left: 10px;
+            width: 60px;
+            border-radius: 0 20px 0 0;
+        }
+        .window-back {
+            right: 10px;
+            width: 60px;
+            border-radius: 20px 0 0 0;
+        }
+
+        /* 车头车灯 */
+        .car-light {
+            position: absolute;
+            top: 20px;
+            right: 10px;
+            width: 20px;
+            height: 30px;
+            background: #fff8a0;
+            border-radius: 0 10px 10px 0;
+            box-shadow: 0 0 20px 10px rgba(255, 248, 160, 0.6);
+        }
+
+        /* 车轮通用样式 */
+        .wheel {
+            position: absolute;
+            bottom: -40px;
+            width: 60px;
+            height: 60px;
+            background: #222;
+            border-radius: 50%;
+            border: 8px solid #444;
+            /* 车轮转动动画，和车身运动同步 */
+            animation: wheelRotate 1s linear infinite;
+        }
+        .wheel-left {
+            left: 50px;
+        }
+        .wheel-right {
+            right: 50px;
+        }
+        /* 车轮轮毂 */
+        .wheel::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 15px;
+            height: 15px;
+            background: #fff;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 小汽车运动关键帧 */
+        @keyframes carDrive {
+            0% {
+                transform: translateX(-350px); /* 从屏幕左侧外开始 */
+            }
+            100% {
+                transform: translateX(calc(100vw + 50px)); /* 开到屏幕右侧外结束 */
+            }
+        }
+
+        /* 车轮转动关键帧 */
+        @keyframes wheelRotate {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="road">
+        <div class="road-line"></div>
+        <!-- 小汽车完整结构 -->
+        <div class="car">
+            <div class="car-roof">
+                <div class="car-window window-front"></div>
+                <div class="car-window window-back"></div>
+            </div>
+            <div class="car-body">
+                <div class="car-light"></div>
+            </div>
+            <div class="wheel wheel-left"></div>
+            <div class="wheel wheel-right"></div>
+        </div>
+    </div>
+</body>
+</html>
