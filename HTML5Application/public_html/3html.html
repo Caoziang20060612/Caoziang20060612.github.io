@@ -1,24 +1,24 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
     <meta charset="UTF-8">
     <title>Quadratic Solver</title>
 </head>
 <body>
-    <script>
-        const a = parseFloat(prompt("Enter a:"));
-        const b = parseFloat(prompt("Enter b:"));
-        const c = parseFloat(prompt("Enter c:"));
+<script>
+let a = parseFloat(prompt("Enter a:"));
+let b = parseFloat(prompt("Enter b:"));
+let c = parseFloat(prompt("Enter c:"));
 
-        const delta = b * b - 4 * a * c;
-        const x1 = (-b + Math.sqrt(delta)) / (2 * a);
-        const x2 = (-b - Math.sqrt(delta)) / (2 * a);
+let delta = b * b - 4 * a * c;
+let x1 = (-b + Math.sqrt(delta)) / 2 / a;
+let x2 = (-b - Math.sqrt(delta)) / 2 / a;
 
-        alert(`Roots:\nx1 = ${x1}\nx2 = ${x2}`);
+alert(`Roots:\nx1 = ${x1}\nx2 = ${x2}`);
 
-        console.log("a =", a, "b =", b, "c =", c);
-        console.log("delta =", delta);
-        console.log("x1 =", x1, "x2 =", x2);
-    </script>
+console.log("a =", a, "b =", b, "c =", c);
+console.log("delta =", delta);
+console.log("x1 =", x1, "x2 =", x2);
+</script>
 </body>
 </html>
