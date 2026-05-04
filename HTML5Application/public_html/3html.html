@@ -1,24 +1,260 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Quadratic Solver</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower of Hanoi · 3D Learning Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: white;
+        }
+        h1 {
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        .controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+            align-items: center;
+            background: rgba(255,255,255,0.15);
+            padding: 15px 25px;
+            border-radius: 10px;
+            backdrop-filter: blur(10px);
+        }
+        button, select {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+        }
+        #game-container {
+            display: flex;
+            gap: 40px;
+            perspective: 1000px;
+            margin: 30px 0;
+        }
+        .peg {
+            width: 200px;
+            height: 300px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            position: relative;
+            padding-bottom: 10px;
+        }
+        .peg::before {
+            content: '';
+            position: absolute;
+            width: 12px;
+            height: 260px;
+            background: linear-gradient(to right, #555, #333);
+            border-radius: 5px;
+            bottom: 20px;
+        }
+        .disk {
+            height: 25px;
+            border-radius: 8px;
+            cursor: grab;
+            transition: all 0.3s ease;
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+        .disk:active {
+            cursor: grabbing;
+        }
+        .disk.selected {
+            transform: translateY(-30px);
+            box-shadow: 0 8px 15px rgba(255,255,255,0.5);
+        }
+        #message {
+            margin-top: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            height: 30px;
+        }
+    </style>
 </head>
 <body>
-<script>
-let a = parseFloat(prompt("Enter a:"));
-let b = parseFloat(prompt("Enter b:"));
-let c = parseFloat(prompt("Enter c:"));
+    <h1>🏯 Tower of Hanoi - 3D Learning Game</h1>
+    <div class="controls">
+        <label for="disk-count">圆盘数量:</label>
+        <select id="disk-count">
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+        </select>
+        <button id="reset-btn">重置游戏</button>
+        <button id="solve-btn">自动解题</button>
+        <span id="move-count">移动次数: 0</span>
+    </div>
 
-let delta = b * b - 4 * a * c;
-let x1 = (-b + Math.sqrt(delta)) / 2 / a;
-let x2 = (-b - Math.sqrt(delta)) / 2 / a;
+    <div id="game-container">
+        <div class="peg" id="peg1"></div>
+        <div class="peg" id="peg2"></div>
+        <div class="peg" id="peg3"></div>
+    </div>
 
-alert(`Roots:\nx1 = ${x1}\nx2 = ${x2}`);
+    <div id="message"></div>
 
-console.log("a =", a, "b =", b, "c =", c);
-console.log("delta =", delta);
-console.log("x1 =", x1, "x2 =", x2);
-</script>
+    <script>
+        const diskCountSelect = document.getElementById('disk-count');
+        const resetBtn = document.getElementById('reset-btn');
+        const solveBtn = document.getElementById('solve-btn');
+        const moveCountEl = document.getElementById('move-count');
+        const messageEl = document.getElementById('message');
+        const pegs = [
+            document.getElementById('peg1'),
+            document.getElementById('peg2'),
+            document.getElementById('peg3')
+        ];
+
+        let disks = [];
+        let moveCount = 0;
+        let selectedDisk = null;
+        let solving = false;
+
+        const colors = ['#ff6b6b', '#feca57', '#48dbfb', '#ff9ff3', '#54a0ff', '#5f27cd'];
+
+        // 初始化游戏
+        function initGame() {
+            pegs.forEach(peg => peg.innerHTML = '');
+            disks = [];
+            moveCount = 0;
+            moveCountEl.textContent = `移动次数: ${moveCount}`;
+            messageEl.textContent = '';
+            solving = false;
+
+            const diskCount = parseInt(diskCountSelect.value);
+            for (let i = diskCount; i >= 1; i--) {
+                const disk = document.createElement('div');
+                disk.className = 'disk';
+                disk.style.width = `${40 + i * 25}px`;
+                disk.style.backgroundColor = colors[i - 1];
+                disk.dataset.size = i;
+                disk.addEventListener('click', () => selectDisk(disk));
+                pegs[0].appendChild(disk);
+                disks.push(disk);
+            }
+        }
+
+        // 选择圆盘
+        function selectDisk(disk) {
+            if (solving) return;
+            if (selectedDisk) {
+                selectedDisk.classList.remove('selected');
+            }
+            if (selectedDisk === disk) {
+                selectedDisk = null;
+                return;
+            }
+            selectedDisk = disk;
+            disk.classList.add('selected');
+        }
+
+        // 移动圆盘
+        function moveDisk(fromPeg, toPeg) {
+            const topDisk = fromPeg.lastElementChild;
+            if (!topDisk) {
+                showMessage('⚠️ 目标柱子为空！', 'warning');
+                return false;
+            }
+
+            const targetTop = toPeg.lastElementChild;
+            if (targetTop && parseInt(topDisk.dataset.size) > parseInt(targetTop.dataset.size)) {
+                showMessage('❌ 不能把大圆盘放在小圆盘上！', 'error');
+                return false;
+            }
+
+            toPeg.appendChild(topDisk);
+            moveCount++;
+            moveCountEl.textContent = `移动次数: ${moveCount}`;
+            selectedDisk = null;
+            topDisk.classList.remove('selected');
+
+            if (checkWin()) {
+                showMessage(`🎉 恭喜通关！共移动 ${moveCount} 次`, 'success');
+            }
+            return true;
+        }
+
+        // 点击柱子放置圆盘
+        pegs.forEach((peg, index) => {
+            peg.addEventListener('click', (e) => {
+                if (solving || !selectedDisk) return;
+                if (e.target === peg || e.target.classList.contains('disk')) {
+                    const fromPeg = selectedDisk.parentElement;
+                    if (fromPeg === peg) return;
+                    moveDisk(fromPeg, peg);
+                }
+            });
+        });
+
+        // 检查是否胜利
+        function checkWin() {
+            const diskCount = parseInt(diskCountSelect.value);
+            return pegs[2].children.length === diskCount;
+        }
+
+        // 显示提示信息
+        function showMessage(text, type) {
+            messageEl.textContent = text;
+            if (type === 'error') messageEl.style.color = '#ff6b6b';
+            else if (type === 'success') messageEl.style.color = '#2ecc71';
+            else messageEl.style.color = '#feca57';
+        }
+
+        // 自动解题（汉诺塔递归算法）
+        async function solveHanoi(n, from, aux, to) {
+            if (n === 0 || solving === false) return;
+            await solveHanoi(n - 1, from, to, aux);
+            await delay(500);
+            moveDisk(pegs[from], pegs[to]);
+            await solveHanoi(n - 1, aux, from, to);
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // 自动解题按钮
+        solveBtn.addEventListener('click', async () => {
+            if (solving) return;
+            solving = true;
+            initGame();
+            await solveHanoi(parseInt(diskCountSelect.value), 0, 1, 2);
+            solving = false;
+        });
+
+        resetBtn.addEventListener('click', initGame);
+        diskCountSelect.addEventListener('change', initGame);
+
+        // 初始化
+        initGame();
+    </script>
 </body>
 </html>
